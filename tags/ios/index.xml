@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>技术 on AnyMorZ</title>
-    <link>/categories/%E6%8A%80%E6%9C%AF/</link>
-    <description>Recent content in 技术 on AnyMorZ</description>
+    <title>iOS on AnyMorZ</title>
+    <link>/tags/ios/</link>
+    <description>Recent content in iOS on AnyMorZ</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>©2019 AnyMorZ.</copyright>
     <lastBuildDate>Thu, 18 Jun 2020 00:00:00 +0000</lastBuildDate>
     
-        <atom:link href="/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="/tags/ios/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -19,16 +19,6 @@
       
       <guid>/posts/%E5%8D%A1%E9%A1%BF%E4%BC%98%E5%8C%96/</guid>
       <description>卡顿优化 什么是卡顿 卡顿就是在应用使用过程中出现界面不响应或者界面掉帧的情况。而应用界面的渲染以及事件响应是在主线程完成的，出现卡顿的原因可以</description>
-      
-    </item>
-    
-    <item>
-      <title>音频基础知识</title>
-      <link>/posts/%E9%9F%B3%E9%A2%91%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/</link>
-      <pubDate>Mon, 11 Mar 2019 00:00:00 +0000</pubDate>
-      
-      <guid>/posts/%E9%9F%B3%E9%A2%91%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/</guid>
-      <description>音频基础知识 PCM音频系统中，信号每秒被多次采样，每个采样都记录了某一特定时刻波的振幅。由于模拟波形并不能被完美无缺地重建，因此每个采样都是</description>
       
     </item>
     

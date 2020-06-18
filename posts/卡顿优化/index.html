@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.72.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>卡顿优化&nbsp;&ndash;&nbsp;AnyMorZ</title><link rel="stylesheet" href="/css/core.min.802aa67397694ca5d7cacc2140e5e8fcb52d3add493941c161a3c4d2d5da57e3ca230e49da9cc38312e9698b71ef4c3a.css" integrity="sha384-gCqmc5dpTKXXyswhQOXo/LUtOt1JOUHBYaPE0tXaV&#43;PKIw5J2pzDgxLpaYtx70w6"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="卡顿优化" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><span class="site name">AnyMorZ</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="/categories/">Categories</a><a class="nav item" href="/tags/">Tags</a></nav></div></span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">卡顿优化</h1><p class="article date">Thursday, June 18, 2020</p></section><article class="article markdown-body"><h3 id="卡顿优化">卡顿优化</h3>
+<h4 id="什么是卡顿">什么是卡顿</h4>
+<p>卡顿就是在应用使用过程中出现界面不响应或者界面掉帧的情况。而应用界面的渲染以及事件响应是在主线程完成的，出现卡顿的原因可以归结为主线程阻塞。
+如果我们能够捕获主线程卡顿场景（堆栈信息），就可以对症下药，分析修复卡顿问题。</p>
+<h4 id="如何检测主线程卡顿">如何检测主线程卡顿</h4>
+<p>几乎所有的优化都应该基于数据，那如何检测设备卡顿情况呢？</p>
+<ul>
+<li>可以使用 <a href="https://developer.apple.com/library/archive/documentation/ToolsLanguages/Conceptual/Xcode_Overview/MeasuringPerformance.html"target="_blank"> Apple’s Instruments app</a>来测量app的帧率。</li>
+<li>通过<a href="https://developer.apple.com/documentation/quartzcore/cadisplaylink"target="_blank">CADisplayLink</a>回调时间来判断主线程是否卡顿，每一帧渲染完成后，通过回调计算渲染时间，如果超过了<code>16.6ms</code>我们就可以确定存在掉帧情况。</li>
+<li>通过子线程定时检查主线程的状态，当主线程的状态运行超过一定阈值则认为主线程卡顿</li>
+<li>检测<code>Runloop</code> 的起始和结束时间，从而获得主线程的开始和结束状态，计算主线程运行时间，当超过一定阈值认为出现卡顿</li>
+</ul>
+<blockquote>
+<p>一般情况下很难模拟线上用户卡顿场景，应该倾向于使用实时方式判断卡顿状况，当然这种方式不可避免的会造成性能损失</p>
+</blockquote>
+<p>####如何获取主线程运行堆栈</p>
+<p>#####信号
+想要获取线程的堆栈，首先得把线程挂起，然后通过系统API获取堆栈。我们可以通过信号<code>signal</code>实现，给线程注册一个信号，并设置回调，当线程接受到这个信号的时候，获取当前运行堆栈。</p>
+<div class="highlight"><pre class="chroma"><code class="language-objectivec" data-lang="objectivec"><span class="k">static</span> <span class="kt">void</span> <span class="nf">_callstack_signal_handler</span><span class="p">(</span><span class="kt">int</span> <span class="n">signr</span><span class="p">,</span> <span class="n">siginfo_t</span> <span class="o">*</span><span class="n">info</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">secret</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">callstack_size</span> <span class="o">=</span> <span class="n">backtrace</span><span class="p">(</span><span class="n">callstacks</span><span class="p">,</span> <span class="mi">128</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// Setup the signal
+</span><span class="c1"></span><span class="k">struct</span> <span class="n">sigaction</span> <span class="n">sa</span><span class="p">;</span>
+<span class="n">sigfillset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">sa</span><span class="p">.</span><span class="n">sa_mask</span><span class="p">);</span>
+<span class="n">sa</span><span class="p">.</span><span class="n">sa_flags</span> <span class="o">=</span> <span class="n">SA_SIGINFO</span><span class="p">;</span>
+<span class="n">sa</span><span class="p">.</span><span class="n">sa_sigaction</span> <span class="o">=</span> <span class="n">_callstack_signal_handler</span><span class="p">;</span>
+<span class="n">sigaction</span><span class="p">(</span><span class="n">SIGPROF</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">sa</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+
+</code></pre></div><p>#####如何触发信号</p>
+<p><img  src="/img/GEMHrgAsxl4bJ1oFABQauyIAAAAAbj0JAAAB.jpg"
+        alt="Alt text"/></p>
+<p>当信号设置完成之后，我们需要一个机制来触发这个信号。iOS常见的定时任务实现有：</p>
+<ul>
+<li>NSTimer</li>
+<li>CADisplayLink</li>
+<li>GCD</li>
+<li>NSThread</li>
+</ul>
+<p>首先排除 <code>NSTimer</code>,  <code>CADisplayLink</code>,  而GCD没有办法做到 <code>10 ms</code>回调一次，我们选择通过 <code>NSThread</code>实现这个功能。</p>
+<blockquote>
+<p>要注意的是，如果主线程正在处理耗时操作，也就是出现卡顿掉帧情况下，CPU会被占用，一般情况下我们的<code>信号线程</code>也会被阻塞直到主线程完成任务，这种情况下我们就会错过卡顿时间点。为了解决这个问题，我们给<code>信号线程</code>更高的优先级。</p>
+</blockquote>
+<pre><code>// Setup the signal firing loop
+_trackerThread = [[NSThread alloc] initWithTarget:[self class] selector:@selector(_loop) object:nil];
+// We wanna be higher priority than the main thread
+// On iOS8 : this will roughly stick us at priority 61, while the main thread oscillates between 20 and 47
+_trackerThread.threadPriority = 1.0;
+[_trackerThread start];
+
++ (void)_loop {
+    while (true) {
+        if (!_fire) {
+            return;
+        }
+        usleep(16000);
+        pthread_kill(_mainThread, SIGPROF);
+    }
+}
+
+</code></pre><p>#####性能及优化</p>
+<p>正如之前提过的这种方式会带来不小的性能开销，主要是两个方面</p>
+<ul>
+<li>backtrace方法耗时，大概在 <code>1ms</code></li>
+<li>线程挂起，恢复，上下文切换耗时，大概在 <code>3.5us</code> ，不同机器不同</li>
+</ul>
+<p>在业务开发过程中应该设计比较好的采样策略，比如滑动的时候菜开启，甚至测试才开启等。</p>
+</article><section class="article labels"><a class="category" href=/categories/%E6%8A%80%E6%9C%AF/>技术</a><a class="tag" href=/tags/ios/>iOS</a></section></div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/posts/%E9%9F%B3%E9%A2%91%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"><span class="iconfont icon-article"></span>音频基础知识</a></p></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 AnyMorZ.</p>
+    <p class="powerby"><span>Powered by </span><a href="https://gohugo.io" 
+        target="_blank">Hugo</a><span> and the </span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank">Notepadium</a></p>
+</div></section></body>
+
+</html>

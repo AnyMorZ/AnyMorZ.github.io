@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.72.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>音频基础知识&nbsp;&ndash;&nbsp;AnyMorZ</title><link rel="stylesheet" href="/css/core.min.802aa67397694ca5d7cacc2140e5e8fcb52d3add493941c161a3c4d2d5da57e3ca230e49da9cc38312e9698b71ef4c3a.css" integrity="sha384-gCqmc5dpTKXXyswhQOXo/LUtOt1JOUHBYaPE0tXaV&#43;PKIw5J2pzDgxLpaYtx70w6"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="音频基础知识" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><span class="site name">AnyMorZ</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="/categories/">Categories</a><a class="nav item" href="/tags/">Tags</a></nav></div></span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">音频基础知识</h1><p class="article date">Monday, March 11, 2019</p></section><article class="article markdown-body"><h3 id="音频基础知识">音频基础知识</h3>
+<p>PCM音频系统中，<code>信号每秒被多次采样，每个采样都记录了某一特定时刻波的振幅</code>。由于模拟波形并不能被完美无缺地重建，因此每个采样都是取的近似值。而当这些样本按顺序播放时，便可以准确地重新再现声音</p>
+<p>数字音频也有两个主要的参数：采样率和位深度。采样率指的是声音每秒被采样的次数，而位深度指的则是每个采样所能够捕获的动态范围量。</p>
+<p>####采样率 （sample rate）
+######不叫 采样频率，采样频率是 sample frequency 。</p>
+<p>常见采样率：<code>8kHz</code> <code>44.1kHz</code> <code>48kHz</code>
+蓝牙常见的采样率通常是： <code>8kHz</code>
+CD的标准采样率为<code>44.1kHz</code>，看上去这个数字好像是一个很随机的选择，但是其实根据奎斯特—香农采样定理，采样率必须要高于捕获最高频率的两倍。而人耳的听觉上限是20kHz，因此需要大于40kHz的采样率才能捕获整个范围（而额外的4.1kHz则是为了避免一种名为“混叠”的失真现象）。理论上，44.1kHz的采样率已经足够我们准确地再现任何声音了，但是还是有更高的采样率的存在。</p>
+<p>另一种最为常见的采样率便是<code>48kHz</code>，它是电影以及视频声音的主要标准。这是因为它的设计与现有的每秒24帧的电影帧速率标准相互集成。而与奎斯特频率类似，24帧是刚好可以使得一系列图像看起来像是流畅的运动图像的神奇数字。而<code>音频采样率必须要是帧速率的倍数，才能保持同步</code>，44.1kHz会随着时间的推移而导致明显的音画不同步现象，因此48kHz的采样率最为合适。</p>
+<p>更高的采样率也被广泛使用，但这些采样率的必要性却饱受争议。支持者称超高频率的采样率巧妙增加了保真度，并为信号添加了“味道”；而反对者则认为，44.1已经足够，而且采样率越高，文件大小也会越大，并且在抖动到较低采样率时，会无可避免地产生“伪阴影”。
+这些更高的采样率通常都是44.1或者48的倍数，例如88.2、96以及192kHz都是现代设备和软件中常用的采样率选项。</p>
+<p>####比特深度（bit depth）</p>
+<p>比特深度其实是记录每个采样点的波形振幅数据需要多少个bit <code>也就是采集声音的精度</code></p>
+<pre><code>1号采样点  3.153115
+2号采样点  41.133
+3号采样点  7.9751464123
+4号采样点  12.3412435464098271908
+</code></pre><p>很明显每个采样点采集到的波形振幅数据不可能无限精确的，那我的数据量可能会无穷无尽了，每一个采样点只能弄个固定的位数的数字来表示。<code>那我们需要规定一定的数字范围来记录声音 超过这个范围的我们就对他4舍5入  不足位数的我们就给他补全</code></p>
+<ul>
+<li>4-bit：16个数值，24dB的动态范围。有时也会用于极低保真的“bitcrushed”效果器上。</li>
+<li>8-bit：256个数值，48dB的动态范围。经常用于早期的经典的视频游戏系统。</li>
+<li>16-bit：65536个数值，96dB的动态范围，CD音频的标准比特深度。</li>
+<li>24-bit：16777216个数值，145dB的动态范围，最常用的比特深度。</li>
+<li>32或者 64-bit：“浮点”，目前可以做到提供最佳信噪比的数值，但是尚未被广泛采用。</li>
+</ul>
+<blockquote>
+<p>Decibel (symbol: dB) 是声压级SPL（Sound Pressure Level）的大小的单位。 20 log₁₀ (<code>x</code>Pa/0.000020 Pa)
+由于人类耳朵对声音强度的反应是成对数形式的。人耳可听的声压幅值波动范围为2×10^-5Pa~20Pa，用幅值dB表示对应的分贝数为0~120dB，因此，当用分贝表示声压级的大小时，表征起来更为方便。</p>
+</blockquote>
+<p>####码率（比特率）
+<code>码率其实就是每秒花费了多少数据来记录声音信号</code>
+PCM音频流的码率是一件很轻松的事情，采样率值×采样大小值×声道数bps。一个采样率为44.1KHz，采样大小为16bit，双声道的PCM编码的WAV文件，它的数据速率则为 44.1K×16×2 =1411.2 Kbps</p>
+<blockquote>
+<p>注：音频文件大小(单位Byte)=(量化单位数×采样频率×声道数×持续时间)/8</p>
+</blockquote>
+<p>####格式
+作者：Ianlie Dark
+链接：https://www.zhihu.com/question/26348226/answer/32963466
+来源：知乎
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</p>
+<p>在说有损和无损之前，还有两个词跟大家解释一下，就是我们在压缩MP3的时候会看到CBR、VBR两种方式。而CBR就是Constants Bit Rate，恒定比特率，定码率；VBR就是Variable Bit Rate，动态比特率，变码率。<code> 注：iOS系统中最好使用定码率有些情况下，系统获取的音频时长会有问题。</code>理论上说，VBR的方式是根据音频源文件中声音的具体频率，自动修正一些比特率，以达到在同样比特率效果中，达到更小的文件。
+我们再来说有损和无损。简单的来说，<code>有损压缩就是通过删除一些已有数据中对人耳听觉影响较小的高频部分数据来达到压缩目的；无损压缩就是通过优化排列方式来达到压缩目的</code>。由于这些压缩方式涉及到更深的技术知识，我们就不再多说，大概可以这样去看：有损压缩就像我们在一篇文章中删除一些不重要的助词，达到目的，解压缩后，已删除的内容无法恢复；而无损则是通过排版方式达到的，解压缩之后，还能获得完整的WAV数据，就像是我们常用的winzip和WinRAR那样。
+在无损格式中，目前比较常用的有</p>
+<ul>
+<li><code>APE</code>(Monkey&rsquo;s Audio)</li>
+<li><code>FLAC</code>(Free Lossless Audio Codec)</li>
+</ul>
+<p>前者拥有更小的比特率，后者则更容易传播，其区别就是，FLAC可以在传播中断后，已传播的数据就可以直接使用。比如我们下载一首APE格式的音乐，必须等全部数据下载完成后，才能播放，而FLAC则不同，你只下载了1/3，就能先播放这1/3的内容。</p>
+<p><code>WAV</code> 既可以是无损也可是有损的，CD标准的WAV文件的比特率是1411kb（44.1khz×16bit×2通道=1411.2kb）而无损压缩则根据源文件的内容不同，大概是900-1000左右.</p>
+<p>不同的编码方式在不同的码率优势不同。<a href="https://bbs.kafan.cn/thread-746782-1-1.html"target="_blank">参考</a></p>
+<ul>
+<li><code>OGG</code>的优势范围：96K以上（OGG）</li>
+<li><code>AAC</code>的优势范围：AAC LC应高于（包含）256K AAC HE 48K-96K</li>
+<li><code>MP3</code>的优势范围：192K（包含）以上</li>
+<li><code>WMA</code>的优势范围：128K（包含）以下</li>
+</ul>
+</article><section class="article labels"><a class="category" href=/categories/%E6%8A%80%E6%9C%AF/>技术</a><a class="tag" href=/tags/%E9%9F%B3%E9%A2%91/>音频</a></section></div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/posts/%E5%8D%A1%E9%A1%BF%E4%BC%98%E5%8C%96/"><span class="iconfont icon-article"></span>卡顿优化</a></p></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 AnyMorZ.</p>
+    <p class="powerby"><span>Powered by </span><a href="https://gohugo.io" 
+        target="_blank">Hugo</a><span> and the </span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank">Notepadium</a></p>
+</div></section></body>
+
+</html>
